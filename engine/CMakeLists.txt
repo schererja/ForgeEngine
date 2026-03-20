@@ -10,7 +10,7 @@ file(GLOB_RECURSE ENGINE_SOURCES
 )
 
 #add the executable
-add_executable(ForgeEngine ${ENGINE_SOURCES})
+add_library(ForgeEngine STATIC ${ENGINE_SOURCES})
 
 target_include_directories(ForgeEngine
     PUBLIC
@@ -20,7 +20,7 @@ target_include_directories(ForgeEngine
 )
 # Link SDL2
 target_link_libraries(ForgeEngine
-    PRIVATE
+    PUBLIC
         SDL2::SDL2
         SDL2::SDL2main
         GLEW::GLEW
