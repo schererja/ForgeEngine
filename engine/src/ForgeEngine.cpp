@@ -25,6 +25,7 @@ namespace Forge {
         while (window->isOpen()) {
             window->pollEvents();
             renderer->clear();
+            renderer->drawTestTriangle();
             window->swapBuffers();
         }
 
