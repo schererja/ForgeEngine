@@ -1,6 +1,7 @@
 # Find SDL2
 find_package(SDL2 CONFIG REQUIRED)
-
+find_package(GLEW REQUIRED)
+find_package(OpenGL REQUIRED)
 #collect engine source files
 
 file(GLOB_RECURSE ENGINE_SOURCES
@@ -22,4 +23,6 @@ target_link_libraries(ForgeEngine
     PRIVATE
         SDL2::SDL2
         SDL2::SDL2main
+        GLEW::GLEW
+        OpenGL::GL
 )
