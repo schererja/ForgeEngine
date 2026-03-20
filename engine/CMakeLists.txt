@@ -6,7 +6,7 @@ find_package(OpenGL REQUIRED)
 
 file(GLOB_RECURSE ENGINE_SOURCES
     "src/*.cpp"
-    "src/*.h"
+    "include/*.h"
 )
 
 #add the executable
