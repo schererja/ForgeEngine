@@ -2,10 +2,13 @@
 #include <GL/eglew.h>
 #include <iostream>
 
-namespace Forge {
-    Window::Window(const std::string& title, int width, int height): width(width), height(height){
+namespace Forge
+{
+    Window::Window(const std::string &title, int width, int height) : width(width), height(height)
+    {
         // Initialize SDL
-        if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        if (SDL_Init(SDL_INIT_VIDEO) < 0)
+        {
             std::cerr << "[FORGE] SDL_Init Error: " << SDL_GetError() << std::endl;
             return;
         }
@@ -22,17 +25,18 @@ namespace Forge {
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
             width, height,
-            SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL
-        );
+            SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 
-        if (!sdlWindow) {
+        if (!sdlWindow)
+        {
             std::cerr << "[FORGE] SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
             return;
         }
 
         // Create OpenGL context
         glContext = SDL_GL_CreateContext(sdlWindow);
-        if (!glContext) {
+        if (!glContext)
+        {
             std::cerr << "[FORGE] SDL_GL_CreateContext Error: " << SDL_GetError() << std::endl;
             SDL_DestroyWindow(sdlWindow);
             sdlWindow = nullptr;
@@ -41,7 +45,8 @@ namespace Forge {
 
         // Initialize GLEW
         glewExperimental = GL_TRUE;
-        if (glewInit() != GLEW_OK) {
+        if (glewInit() != GLEW_OK)
+        {
             std::cerr << "[FORGE] GLEW Error: " << glewGetErrorString(glewInit()) << std::endl;
             SDL_GL_DeleteContext(glContext);
             SDL_DestroyWindow(sdlWindow);
@@ -60,18 +65,22 @@ namespace Forge {
         open = true;
     }
 
-    Window::~Window() {
-        if (glContext) {
+    Window::~Window()
+    {
+        if (glContext)
+        {
             SDL_GL_DeleteContext(glContext);
         }
-        if (sdlWindow) {
+        if (sdlWindow)
+        {
             SDL_DestroyWindow(sdlWindow);
         }
         SDL_Quit();
     }
 
-    //Move constructor
-    Window::Window(Window&& other) noexcept {
+    // Move constructor
+    Window::Window(Window &&other) noexcept
+    {
         sdlWindow = other.sdlWindow;
         glContext = other.glContext;
         width = other.width;
@@ -84,14 +93,18 @@ namespace Forge {
         other.open = false;
     }
 
-    //Move assignment operator
-    Window& Window::operator=(Window&& other) noexcept {
-        if (this != &other) {
+    // Move assignment operator
+    Window &Window::operator=(Window &&other) noexcept
+    {
+        if (this != &other)
+        {
             // Clean up current resources
-            if (glContext) {
+            if (glContext)
+            {
                 SDL_GL_DeleteContext(glContext);
             }
-            if (sdlWindow) {
+            if (sdlWindow)
+            {
                 SDL_DestroyWindow(sdlWindow);
             }
 
@@ -110,24 +123,32 @@ namespace Forge {
         return *this;
     }
 
-    bool Window::isOpen() const {
+    bool Window::isOpen() const
+    {
         return open;
     }
 
-    void Window::swapBuffers() {
-        if (sdlWindow) {
+    void Window::swapBuffers()
+    {
+        if (sdlWindow)
+        {
             SDL_GL_SwapWindow(sdlWindow);
         }
     }
 
-    void Window::pollEvents() {
+    void Window::pollEvents()
+    {
         SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
+        while (SDL_PollEvent(&event))
+        {
+            if (event.type == SDL_QUIT)
+            {
                 open = false;
             }
-            if (event.type == SDL_KEYDOWN) {
-                if (event.key.keysym.sym == SDLK_ESCAPE) {
+            if (event.type == SDL_KEYDOWN)
+            {
+                if (event.key.keysym.sym == SDLK_ESCAPE)
+                {
                     open = false;
                 }
             }

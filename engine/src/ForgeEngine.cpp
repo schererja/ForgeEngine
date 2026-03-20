@@ -1,12 +1,15 @@
 #include "ForgeEngine.h"
 #include <iostream>
 
-namespace Forge {
+namespace Forge
+{
 
-    bool Engine::initialize(const EngineConfig& config) {
+    bool Engine::initialize(const EngineConfig &config)
+    {
         window = new Window(config.windowTitle, config.windowWidth, config.windowHeight);
         renderer = new Renderer();
-        if (!window->isOpen()) {
+        if (!window->isOpen())
+        {
             std::cerr << "[FORGE] Failed to initialize window." << std::endl;
             return false;
         }
@@ -14,15 +17,18 @@ namespace Forge {
         return true;
     }
 
-    void Engine::run() {
-        if (!window || !renderer) {
+    void Engine::run()
+    {
+        if (!window || !renderer)
+        {
             std::cerr << "[FORGE] Engine not initialized. Call initialize() before run()." << std::endl;
             return;
         }
 
         std::cout << "[FORGE] Starting main loop." << std::endl;
 
-        while (window->isOpen()) {
+        while (window->isOpen())
+        {
             window->pollEvents();
             renderer->clear();
             renderer->drawTestTriangle();
@@ -32,7 +38,8 @@ namespace Forge {
         std::cout << "[FORGE] Main loop exited." << std::endl;
     }
 
-    void Engine::shutdown() {
+    void Engine::shutdown()
+    {
         delete renderer;
         delete window;
         renderer = nullptr;
