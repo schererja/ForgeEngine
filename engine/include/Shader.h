@@ -3,30 +3,31 @@
 #include <GL/glew.h>
 #include <string>
 
-namespace Forge
-{
-    class Shader
-    {
-    public:
-        Shader(const std::string &vertexPath, const std::string &fragmentPath);
-        ~Shader();
+namespace Forge {
 
-        // Rule of Five - delete copy constructor and copy assignment operator - no copying
-        Shader(const Shader &) = delete;
-        Shader &operator=(const Shader &) = delete;
+// Owns an OpenGL shader program and manages bind/unbind lifecycle.
+class Shader {
+public:
+  Shader(const std::string &vertexPath, const std::string &fragmentPath);
+  ~Shader();
 
-        // Moving is fine
-        Shader(Shader &&other) noexcept;
-        Shader &operator=(Shader &&other) noexcept;
+  // Non-copyable because program ownership is unique.
+  Shader(const Shader &) = delete;
+  Shader &operator=(const Shader &) = delete;
 
-        void bind() const;
-        void unbind() const;
+  // Movable to transfer program ownership.
+  Shader(Shader &&other) noexcept;
+  Shader &operator=(Shader &&other) noexcept;
 
-        bool isValid() const { return programID != 0; }
+  void bind() const;
+  void unbind() const;
 
-    private:
-        GLuint programID = 0;
+  bool isValid() const { return programID != 0; }
 
-        GLuint compileShader(GLenum type, const std::string &source);
-    };
-}
+private:
+  GLuint programID = 0;
+
+  // Compiles a single shader stage and returns its object ID.
+  GLuint compileShader(GLenum type, const std::string &source);
+};
+} // namespace Forge
