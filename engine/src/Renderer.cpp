@@ -5,26 +5,6 @@ namespace Forge {
 
 // Minimal GLSL shaders embedded as strings for bootstrapping.
 
-static const std::string VERTEX_SHADER = R"(
-    #version 330 core
-        layout (location = 0) in vec2 aPos;
-        layout (location = 1) in vec2 aTexCoord; // Using color attribute as "texture coordinate" for testing
-        out vec2 texCoord;
-        void main() {
-            gl_Position = vec4(aPos, 0.0, 1.0);
-            texCoord = aTexCoord; // Pass color as "texture coordinate" to fragment shader
-        }
-    )";
-
-static const std::string FRAGMENT_SHADER = R"(
-        #version 330 core
-        in vec2 texCoord;
-        out vec4 outColor;
-        uniform sampler2D uTexture; // Not used in this test shader, but reserved for future use
-        void main() {
-            outColor = texture(uTexture, texCoord); // Sample the "texture" using the passed color as coordinates
-        }
-    )";
 Renderer::Renderer() {
   setClearColor(0.117f, 0.117f, 0.117f, 1.0f);
   setupTestTriangle();
@@ -74,7 +54,8 @@ void Renderer::setupTestTriangle() {
 
   glBindVertexArray(0);
 
-  shader = std::make_unique<Shader>(VERTEX_SHADER, FRAGMENT_SHADER);
+  shader = std::make_unique<Shader>("game/assets/shaders/sprite.vert",
+                                    "game/assets/shaders/sprite.frag");
   if (!shader->isValid()) {
     std::cerr << "[Forge] Failed to create shader program." << std::endl;
   }

@@ -17,6 +17,17 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 
+# Include cmrc
+include(cmake/CMakeRC.cmake)
+
+# Create embedded asset library
+cmrc_add_resource_library(ForgeAssets
+    ALIAS Forge::Assets
+    NAMESPACE forge
+    game/assets/shaders/sprite.vert
+    game/assets/shaders/sprite.frag
+)
+
 # Add subdirectories
 add_subdirectory(engine)
 add_subdirectory(plugins)

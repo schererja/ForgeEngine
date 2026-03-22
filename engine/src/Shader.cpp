@@ -1,10 +1,30 @@
 #include "Shader.h"
+#include <cmrc/cmrc.hpp>
 #include <iostream>
+#include <string>
+
+CMRC_DECLARE(forge);
 
 namespace Forge {
+
+// Helper to load embedded file as a string
+static std::string loadEmbeddedFile(const std::string &path) {
+  auto fs = cmrc::forge::get_filesystem();
+  auto file = fs.open(path);
+  std::string src(file.begin(), file.end());
+  if (src.size() >= 3 && (unsigned char)src[0] == 0xEF &&
+      (unsigned char)src[1] == 0xBB && (unsigned char)src[2] == 0xBF) {
+    src = src.substr(3); // Remove UTF-8 BOM if present
+  }
+  return src;
+}
+
 Shader::Shader(const std::string &vertexPath, const std::string &fragmentPath) {
-  GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexPath);
-  GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentPath);
+  std::string vertSrc = loadEmbeddedFile(vertexPath);
+  std::string fragSrc = loadEmbeddedFile(fragmentPath);
+
+  GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertSrc);
+  GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragSrc);
 
   if (vertexShader == 0 || fragmentShader == 0) {
     std::cerr << "[Forge] Failed to compile shaders." << std::endl;
