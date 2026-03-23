@@ -1,5 +1,7 @@
 #include "Window.h"
-#include <GL/glew.h>
+#include <SDL2/SDL.h>
+
+#include <glad/gl.h>
 #include <iostream>
 
 namespace Forge {
@@ -40,15 +42,10 @@ Window::Window(const std::string &title, int width, int height)
   }
 
   // Initialize GLEW after a valid OpenGL context is active.
-  glewExperimental = GL_TRUE;
-  const GLenum glewStatus = glewInit();
-  if (glewStatus != GLEW_OK) {
-    std::cerr << "[FORGE] GLEW Error: " << glewGetErrorString(glewStatus)
-              << std::endl;
+  if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress)) {
+    std::cerr << "[Forge] GLAD initialization failed" << std::endl;
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(sdlWindow);
-    glContext = nullptr;
-    sdlWindow = nullptr;
     SDL_Quit();
     return;
   }
@@ -59,8 +56,8 @@ Window::Window(const std::string &title, int width, int height)
   // Log active graphics runtime versions for diagnostics.
   std::cout << "[FORGE] OpenGL Version: " << glGetString(GL_VERSION)
             << std::endl;
-  std::cout << "[FORGE] GLEW Version: " << glewGetString(GLEW_VERSION)
-            << std::endl;
+  std::cout << "[FORGE] GLAD initialized successfully" << std::endl;
+
 
   open = true;
 }

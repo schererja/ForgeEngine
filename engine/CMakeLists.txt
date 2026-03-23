@@ -1,8 +1,6 @@
 # Find SDL2
-find_package(SDL2 CONFIG REQUIRED)
-find_package(GLEW REQUIRED)
+
 find_package(OpenGL REQUIRED)
-find_package(stb REQUIRED)
 #collect engine source files
 
 file(GLOB_RECURSE ENGINE_SOURCES
@@ -18,13 +16,14 @@ target_include_directories(ForgeEngine
         ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_SOURCE_DIR}/thirdparty/stb
 )
 # Link SDL2
 target_link_libraries(ForgeEngine
     PUBLIC
         SDL2::SDL2
         SDL2::SDL2main
-        GLEW::GLEW
+        glad
         OpenGL::GL
         Forge::Assets
 )
