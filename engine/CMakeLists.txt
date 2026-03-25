@@ -25,5 +25,6 @@ target_link_libraries(ForgeEngine
         SDL2::SDL2main
         glad
         OpenGL::GL
+        glm::glm
         Forge::Assets
 )

@@ -24,6 +24,7 @@ public:
   void unbind() const;
 
   bool isValid() const { return programID != 0; }
+  GLuint getProgramID() const { return programID; }
 
 private:
   GLuint programID = 0;

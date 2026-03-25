@@ -1,34 +1,38 @@
 #pragma once
+
 #include <glad/gl.h>
 
-#include "Shader.h"
-#include "Texture.h"
+#include <glm/glm.hpp>
 #include <memory>
+
+#include "Shader.h"
+#include "Sprite.h"
+#include "Texture.h"
 
 namespace Forge {
 
 // Minimal renderer responsible for clearing and drawing a test primitive.
 class Renderer {
-public:
-  Renderer();
-  ~Renderer();
+   public:
+    Renderer(int screenWidth, int screenHeight);
+    ~Renderer();
 
-  // Non-copyable because OpenGL object handles have unique ownership.
-  Renderer(const Renderer &) = delete;
-  Renderer &operator=(const Renderer &) = delete;
+    // Non-copyable because OpenGL object handles have unique ownership.
+    Renderer(const Renderer&) = delete;
+    Renderer& operator=(const Renderer&) = delete;
 
-  // Rendering API
-  void setClearColor(float r, float g, float b, float a = 1.0f);
-  void clear();
-  void drawTestTriangle();
-  void drawTestQuad(const Texture &texture);
+    // Rendering API
+    void setClearColor(float r, float g, float b, float a = 1.0f);
+    void clear();
+    void drawSprite(const Sprite& sprite);
 
-private:
-  GLuint vertexArray = 0;
-  GLuint vertexBuffer = 0;
-  std::unique_ptr<Shader> shader;
+   private:
+    GLuint vertexArray = 0;
+    GLuint vertexBuffer = 0;
+    std::unique_ptr<Shader> shader;
+    glm::mat4 projection;
 
-  // Allocates GPU buffers and shader state for the built-in triangle test.
-  void setupTestTriangle();
+    // Allocates GPU buffers and shader state for the built-in triangle test.
+    void setupQuad();
 };
-} // namespace Forge
+}  // namespace Forge

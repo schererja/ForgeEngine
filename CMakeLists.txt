@@ -24,6 +24,12 @@ FetchContent_Declare(SDL2
 )
 FetchContent_MakeAvailable(SDL2)
 
+FetchContent_Declare(glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG 1.0.1
+)
+FetchContent_MakeAvailable(glm)
+
 
 add_library(glad STATIC thirdparty/glad/src/gl.c)
 target_include_directories(glad PUBLIC thirdparty/glad/include)

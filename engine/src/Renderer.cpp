@@ -1,92 +1,129 @@
 #include "Renderer.h"
+
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 
 namespace Forge {
 
 // Minimal GLSL shaders embedded as strings for bootstrapping.
 
-Renderer::Renderer() {
-  setClearColor(0.117f, 0.117f, 0.117f, 1.0f);
-  setupTestTriangle();
+Renderer::Renderer(int screenWidth, int screenHeight) {
+    glClearColor(0.117f, 0.117f, 0.117f, 1.0f);
+
+    // Orthographic projection with (0,0) at top-left and (screenWidth, screenHeight) at
+    // bottom-right
+    projection = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f, -1.0f, 1.0f);
+    setupQuad();
 }
 
 Renderer::~Renderer() {
-  if (vertexBuffer) {
-    glDeleteBuffers(1, &vertexBuffer);
-  }
-  if (vertexArray) {
-    glDeleteVertexArrays(1, &vertexArray);
-  }
+    if (vertexBuffer) {
+        glDeleteBuffers(1, &vertexBuffer);
+    }
+    if (vertexArray) {
+        glDeleteVertexArrays(1, &vertexArray);
+    }
 }
 
-void Renderer::setClearColor(float r, float g, float b, float a) {
-  glClearColor(r, g, b, a);
-}
+void Renderer::setClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
 
 void Renderer::clear() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }
 
-void Renderer::setupTestTriangle() {
-  // Interleaved position/color vertex data for a single triangle.
-  float vertices[] = {
-      // position       // UV
-      -0.5f, 0.5f,  0.0f, 1.0f, // top left
-      -0.5f, -0.5f, 0.0f, 0.0f, // bottom left
-      0.5f,  -0.5f, 1.0f, 0.0f, // bottom right
+void Renderer::setupQuad() {
+    // Unit Quad -position and UV
+    // Actual position/size set per draw call via vertex data
+    float vertices[] = {
+        // position       // UV
+        0.0f, 0.0f, 0.0f, 0.0f,  // top left
+        0.0f, 1.0f, 0.0f, 1.0f,  // bottom left
+        1.0f, 1.0f, 1.0f, 1.0f,  // bottom right
 
-      -0.5f, 0.5f,  0.0f, 1.0f, // top left
-      0.5f,  -0.5f, 1.0f, 0.0f, // bottom right
-      0.5f,  0.5f,  1.0f, 1.0f  // top right
-  };
+        0.0f, 0.0f, 0.0f, 0.0f,  // top left
+        1.0f, 1.0f, 1.0f, 1.0f,  // bottom right
+        1.0f, 0.0f, 1.0f, 0.0f   // top right
+    };
 
-  glGenVertexArrays(1, &vertexArray);
-  glBindVertexArray(vertexArray);
+    glGenVertexArrays(1, &vertexArray);
+    glBindVertexArray(vertexArray);
 
-  glGenBuffers(1, &vertexBuffer);
-  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glGenBuffers(1, &vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
-  glEnableVertexAttribArray(0);
+    // Position
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float),
-                        (void *)(2 * sizeof(float)));
-  glEnableVertexAttribArray(1);
+    // UV
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
-  glBindVertexArray(0);
+    glBindVertexArray(0);
 
-  shader = std::make_unique<Shader>("game/assets/shaders/sprite.vert",
-                                    "game/assets/shaders/sprite.frag");
-  if (!shader->isValid()) {
-    std::cerr << "[Forge] Failed to create shader program." << std::endl;
-  }
+    shader = std::make_unique<Shader>("game/assets/shaders/sprite.vert",
+                                      "game/assets/shaders/sprite.frag");
+    if (!shader->isValid()) {
+        std::cerr << "[Forge] Failed to create shader program." << std::endl;
+    }
 }
+void Renderer::drawSprite(const Sprite& sprite) {
+    if (!shader || !shader->isValid()) {
+        std::cerr << "[Forge] Cannot draw sprite: shader program is not valid." << std::endl;
+        return;
+    }
+    const Rect& uv = sprite.getUVRegion();
+    float x = sprite.getX();
+    float y = sprite.getY();
+    float width = (float)sprite.getWidth();
+    float height = (float)sprite.getHeight();
 
-void Renderer::drawTestTriangle() {
-  if (!shader || !shader->isValid()) {
-    std::cerr << "[Forge] Cannot draw triangle: Shader program is not valid."
-              << std::endl;
-    return;
-  }
+    // build quad vertex data with position and UVs based on sprite properties
+    float vertices[] = {
+        // position       // UV
+        x,
+        y,
+        uv.x,
+        uv.y,  // top left
+        x,
+        y + height,
+        uv.x,
+        uv.y + uv.height,  // bottom
+        x + width,
+        y + height,
+        uv.x + uv.width,
+        uv.y + uv.height,  // bottom right
+        x,
+        y,
+        uv.x,
+        uv.y,  // top left
+        x + width,
+        y + height,
+        uv.x + uv.width,
+        uv.y + uv.height,  // bottom right
+        x + width,
+        y,
+        uv.x + uv.width,
+        uv.y  // top right
+    };
 
-  shader->bind();
-  glBindVertexArray(vertexArray);
-  glDrawArrays(GL_TRIANGLES, 0, 3);
-  glBindVertexArray(0);
-  shader->unbind();
+    shader->bind();
+
+    // Upload projection Matrix to shader
+
+    GLint projLoc = glGetUniformLocation(shader->getProgramID(), "uProjection");
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+    // upload updated vertices to GPU
+    glBindVertexArray(vertexArray);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+
+    sprite.getTexture().bind(0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    sprite.getTexture().unbind();
+    glBindVertexArray(0);
+    shader->unbind();
 }
-
-void Renderer::drawTestQuad(const Texture &texture) {
-  if (!shader || !shader->isValid()) {
-    std::cerr << "[Forge] Cannot draw quad: Shader program is not valid."
-              << std::endl;
-    return;
-  }
-  shader->bind();
-  texture.bind(0);
-  glBindVertexArray(vertexArray);
-  glDrawArrays(GL_TRIANGLES, 0, 6);
-  glBindVertexArray(0);
-  texture.unbind();
-  shader->unbind();
-}
-} // namespace Forge
+}  // namespace Forge
