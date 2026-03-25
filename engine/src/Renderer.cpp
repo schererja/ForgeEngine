@@ -13,7 +13,7 @@ Renderer::Renderer(int screenWidth, int screenHeight) {
 
     // Orthographic projection with (0,0) at top-left and (screenWidth, screenHeight) at
     // bottom-right
-    projection = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f, -1.0f, 1.0f);
+    viewProjection = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f, -1.0f, 1.0f);
     setupQuad();
 }
 
@@ -112,7 +112,7 @@ void Renderer::drawSprite(const Sprite& sprite) {
     // Upload projection Matrix to shader
 
     GLint projLoc = glGetUniformLocation(shader->getProgramID(), "uProjection");
-    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(viewProjection));
 
     // upload updated vertices to GPU
     glBindVertexArray(vertexArray);
@@ -125,5 +125,13 @@ void Renderer::drawSprite(const Sprite& sprite) {
     sprite.getTexture().unbind();
     glBindVertexArray(0);
     shader->unbind();
+}
+
+void Renderer::setCamera(const Camera& camera) {
+    // shader->bind();
+    // GLint projLoc = glGetUniformLocation(shader->getProgramID(), "uProjection");
+    // glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(camera.getViewProjection()));
+    // shader->unbind();
+    viewProjection = camera.getViewProjection();
 }
 }  // namespace Forge

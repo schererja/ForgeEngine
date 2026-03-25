@@ -28,11 +28,17 @@ void Engine::run() {
     }
     Sprite testSprite("../game/assets/sprite.png");
     testSprite.setPosition(100.0f, 100.0f);
+
+    Camera camera(1280, 720);
     std::cout << "[FORGE] Starting main loop." << std::endl;
 
     // Basic game loop: process input, render frame, present.
     while (window->isOpen()) {
         window->pollEvents();
+
+        // Test Camera movement - move right 1 pixel per frame
+        camera.move(1.0f, 0.0f);
+        renderer->setCamera(camera);
         renderer->clear();
         renderer->drawSprite(testSprite);
         window->swapBuffers();

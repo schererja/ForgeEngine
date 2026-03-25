@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <memory>
 
+#include "Camera.h"
 #include "Shader.h"
 #include "Sprite.h"
 #include "Texture.h"
@@ -25,12 +26,13 @@ class Renderer {
     void setClearColor(float r, float g, float b, float a = 1.0f);
     void clear();
     void drawSprite(const Sprite& sprite);
+    void setCamera(const Camera& camera);
 
    private:
     GLuint vertexArray = 0;
     GLuint vertexBuffer = 0;
     std::unique_ptr<Shader> shader;
-    glm::mat4 projection;
+    glm::mat4 viewProjection;
 
     // Allocates GPU buffers and shader state for the built-in triangle test.
     void setupQuad();
