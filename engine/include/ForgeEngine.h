@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "Camera.h"
+#include "EntityManager.h"
 #include "Input.h"
 #include "Renderer.h"
 #include "Window.h"
@@ -17,6 +19,9 @@ struct EngineConfig {
 // High-level engine facade that owns windowing and rendering systems.
 class Engine {
    public:
+    Engine() = default;
+    Engine(const Engine&) = delete;
+    Engine& operator=(const Engine&) = delete;
     // Creates core systems and prepares the engine to run.
     bool initialize(const EngineConfig& config = EngineConfig());
 
@@ -26,9 +31,13 @@ class Engine {
     // Releases all owned systems.
     void shutdown();
 
+    // Accessors for core systems. These are non-owning raw pointers for simplicity.
+    EntityManager& getEntityManager() { return entityManager; }
+
    private:
     Window* window = nullptr;
     Renderer* renderer = nullptr;
     Input* input = nullptr;
+    EntityManager entityManager;
 };
 }  // namespace Forge
