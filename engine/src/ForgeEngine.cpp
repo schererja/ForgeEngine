@@ -36,6 +36,11 @@ void Engine::run() {
                                                 {"../game/assets/sprite.png", 32.0f, 32.0f, 0});
     entityManager.addComponent<PlayerComponent>(player, {200.0f});
     entityManager.addComponent<NameComponent>(player, {"Player"});
+
+    EntityID landmark = entityManager.createEntity();
+    entityManager.addComponent<TransformComponent>(landmark, {400.0f, 300.0f});
+    entityManager.addComponent<SpriteComponent>(landmark,
+                                                {"../game/assets/test.png", 48.0f, 48.0f, 0});
     // Verify entity components
     std::cout << "[FORGE] Verifying components..." << std::endl;
 
@@ -61,9 +66,7 @@ void Engine::run() {
               << std::endl;
 
     std::cout << "[FORGE] Entity count: " << entityManager.getEntityCount() << std::endl;
-    Sprite testSprite("../game/assets/sprite.png");
     Camera camera(1280, 720);
-    float cameraSpeed = 3.0f;
     std::cout << "[FORGE] Starting main loop." << std::endl;
 
     // Basic game loop: process input, render frame, present.
@@ -87,12 +90,12 @@ void Engine::run() {
             if (input->isKeyHeldDown(Key::DOWN) || input->isKeyHeldDown(Key::S)) {
                 transform->y += moveSpeed;
             }
-            camera.setPosition(transform->x - 1280 / 2, transform->y - 720 / 2);
+            // camera.setPosition(transform->x - 640, transform->y - 360);
         }
 
         renderer->setCamera(camera);
         renderer->clear();
-        renderer->drawSprite(testSprite);
+        renderer->drawEntities(entityManager, assetManager);
         window->swapBuffers();
     }
 
@@ -100,10 +103,14 @@ void Engine::run() {
 }
 
 void Engine::shutdown() {
+    assetManager.unloadAll();
+    delete input;
     delete renderer;
     delete window;
+    input = nullptr;
     renderer = nullptr;
     window = nullptr;
+
     std::cout << "[FORGE] Engine shutdown complete." << std::endl;
 }
 }  // namespace Forge

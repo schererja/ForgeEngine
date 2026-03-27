@@ -67,65 +67,65 @@ void Renderer::setupQuad() {
         std::cerr << "[Forge] Failed to create shader program." << std::endl;
     }
 }
-void Renderer::drawSprite(const Sprite& sprite) {
-    if (!shader || !shader->isValid()) {
-        std::cerr << "[Forge] Cannot draw sprite: shader program is not valid." << std::endl;
-        return;
-    }
-    const Rect& uv = sprite.getUVRegion();
-    float x = sprite.getX();
-    float y = sprite.getY();
-    float width = (float)sprite.getWidth();
-    float height = (float)sprite.getHeight();
+// void Renderer::drawSprite(const Sprite& sprite) {
+//     if (!shader || !shader->isValid()) {
+//         std::cerr << "[Forge] Cannot draw sprite: shader program is not valid." << std::endl;
+//         return;
+//     }
+//     const Rect& uv = sprite.getUVRegion();
+//     float x = sprite.getX();
+//     float y = sprite.getY();
+//     float width = (float)sprite.getWidth();
+//     float height = (float)sprite.getHeight();
 
-    // build quad vertex data with position and UVs based on sprite properties
-    float vertices[] = {
-        // position       // UV
-        x,
-        y,
-        uv.x,
-        uv.y,  // top left
-        x,
-        y + height,
-        uv.x,
-        uv.y + uv.height,  // bottom
-        x + width,
-        y + height,
-        uv.x + uv.width,
-        uv.y + uv.height,  // bottom right
-        x,
-        y,
-        uv.x,
-        uv.y,  // top left
-        x + width,
-        y + height,
-        uv.x + uv.width,
-        uv.y + uv.height,  // bottom right
-        x + width,
-        y,
-        uv.x + uv.width,
-        uv.y  // top right
-    };
+//     // build quad vertex data with position and UVs based on sprite properties
+//     float vertices[] = {
+//         // position       // UV
+//         x,
+//         y,
+//         uv.x,
+//         uv.y,  // top left
+//         x,
+//         y + height,
+//         uv.x,
+//         uv.y + uv.height,  // bottom
+//         x + width,
+//         y + height,
+//         uv.x + uv.width,
+//         uv.y + uv.height,  // bottom right
+//         x,
+//         y,
+//         uv.x,
+//         uv.y,  // top left
+//         x + width,
+//         y + height,
+//         uv.x + uv.width,
+//         uv.y + uv.height,  // bottom right
+//         x + width,
+//         y,
+//         uv.x + uv.width,
+//         uv.y  // top right
+//     };
 
-    shader->bind();
+//     shader->bind();
 
-    // Upload projection Matrix to shader
+//     // Upload projection Matrix to shader
 
-    GLint projLoc = glGetUniformLocation(shader->getProgramID(), "uProjection");
-    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(viewProjection));
+//     GLint projLoc = glGetUniformLocation(shader->getProgramID(), "uProjection");
+//     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(viewProjection));
 
-    // upload updated vertices to GPU
-    glBindVertexArray(vertexArray);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+//     // upload updated vertices to GPU
+//     glBindVertexArray(vertexArray);
+//     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+//     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 
-    sprite.getTexture().bind(0);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+//     sprite.getTexture().bind(0);
+//     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    sprite.getTexture().unbind();
-    glBindVertexArray(0);
-    shader->unbind();
-}
+//     sprite.getTexture().unbind();
+//     glBindVertexArray(0);
+//     shader->unbind();
+// }
 
 void Renderer::setCamera(const Camera& camera) {
     // shader->bind();
@@ -134,4 +134,48 @@ void Renderer::setCamera(const Camera& camera) {
     // shader->unbind();
     viewProjection = camera.getViewProjection();
 }
+
+void Renderer::drawEntities(EntityManager& entityManager, AssetManager& assetManager) {
+    entityManager.forEach<TransformComponent, SpriteComponent>(
+        [this, &assetManager](EntityID id, TransformComponent& transform, SpriteComponent& sprite) {
+            Texture* texture = assetManager.getTexture(sprite.texturePath);
+            if (texture) {
+                drawTexture(texture, transform.x, transform.y, sprite.width, sprite.height);
+            }
+        });
+}
+
+void Renderer::drawTexture(Texture* texture, float x, float y, float width, float height) {
+    if (!shader || !shader->isValid()) {
+        return;
+    }
+    float vertices[] = {
+        x,         y,          0.0f,
+        0.0f,  // top left
+        x,         y + height, 0.0f, 1.0f, x + width, y + height, 1.0f,
+        1.0f,  // bottom right
+        x,         y,          0.0f,
+        0.0f,  // top left
+        x + width, y + height, 1.0f,
+        1.0f,  // bottom right
+        x + width, y,          1.0f,
+        0.0f  // top right
+    };
+    shader->bind();
+
+    GLint projLoc = glGetUniformLocation(shader->getProgramID(), "uProjection");
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(viewProjection));
+
+    glBindVertexArray(vertexArray);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+
+    texture->bind(0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    texture->unbind();
+
+    glBindVertexArray(0);
+    shader->unbind();
+}
+
 }  // namespace Forge

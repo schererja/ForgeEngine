@@ -2,7 +2,9 @@
 
 #include <string>
 
+#include "AssetManager.h"
 #include "Camera.h"
+#include "Components.h"
 #include "EntityManager.h"
 #include "Input.h"
 #include "Renderer.h"
@@ -33,11 +35,13 @@ class Engine {
 
     // Accessors for core systems. These are non-owning raw pointers for simplicity.
     EntityManager& getEntityManager() { return entityManager; }
+    AssetManager& getAssetManager() { return assetManager; }
 
    private:
     Window* window = nullptr;
     Renderer* renderer = nullptr;
     Input* input = nullptr;
     EntityManager entityManager;
+    AssetManager assetManager;
 };
 }  // namespace Forge
