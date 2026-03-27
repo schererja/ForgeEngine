@@ -30,7 +30,7 @@ void Engine::run() {
     }
 
     EntityID player = entityManager.createEntity();
-
+#pragma region Component Setup
     entityManager.addComponent<TransformComponent>(player, {100.0f, 100.0f});
     entityManager.addComponent<SpriteComponent>(player,
                                                 {"../game/assets/sprite.png", 32.0f, 32.0f, 0});
@@ -48,7 +48,7 @@ void Engine::run() {
     auto* sprite = entityManager.getComponent<SpriteComponent>(player);
     auto* playerC = entityManager.getComponent<PlayerComponent>(player);
     auto* name = entityManager.getComponent<NameComponent>(player);
-
+#pragma endregion
     std::cout << "[FORGE] TransformComponent: "
               << (transform ? "OK x=" + std::to_string(transform->x) +
                                   " y=" + std::to_string(transform->y)
@@ -67,17 +67,42 @@ void Engine::run() {
 
     std::cout << "[FORGE] Entity count: " << entityManager.getEntityCount() << std::endl;
     Camera camera(1280, 720);
-    std::cout << "[FORGE] Starting main loop." << std::endl;
+    // Delta time for movement calculations
+    Uint64 lastTime = SDL_GetPerformanceCounter();
+    Uint64 frequency = SDL_GetPerformanceFrequency();
+    float deltaTime = 0.0f;
+    float maxDelta = 0.05f;
 
+    std::cout << "[FORGE] Starting main loop." << std::endl;
+    float fpsAccumulator = 0.0f;
+    int fpsFrameCount = 0;
+    float displayFPS = 0.0f;
     // Basic game loop: process input, render frame, present.
     while (window->isOpen()) {
+        // Calculate delta time
+        Uint64 currentTime = SDL_GetPerformanceCounter();
+        deltaTime = (float)(currentTime - lastTime) / (float)frequency;
+        deltaTime = std::min(deltaTime, maxDelta);  // Clamp to avoid big jumps
+        lastTime = currentTime;
+        fpsAccumulator += deltaTime;
+        fpsFrameCount++;
+
+        if (fpsAccumulator >= 0.25f) {  // update display every quarter second
+            displayFPS = fpsFrameCount / fpsAccumulator;
+            fpsAccumulator = 0.0f;
+            fpsFrameCount = 0;
+        }
+
+        std::string title = "ForgeEngine | FPS: " + std::to_string((int)displayFPS);
+        SDL_SetWindowTitle(window->getSDLWindow(), title.c_str());
         window->pollEvents(input);
 
         // Move player entity based on input
         auto* transform = entityManager.getComponent<TransformComponent>(player);
         auto* playerComp = entityManager.getComponent<PlayerComponent>(player);
         if (transform && playerComp) {
-            float moveSpeed = playerComp->moveSpeed * (1.0f / 60.0f);  // Assuming 60 FPS
+            float moveSpeed =
+                playerComp->moveSpeed * deltaTime;  // Scale by delta time for consistent movement
             if (input->isKeyHeldDown(Key::RIGHT) || input->isKeyHeldDown(Key::D)) {
                 transform->x += moveSpeed;
             }
@@ -90,9 +115,9 @@ void Engine::run() {
             if (input->isKeyHeldDown(Key::DOWN) || input->isKeyHeldDown(Key::S)) {
                 transform->y += moveSpeed;
             }
-            // camera.setPosition(transform->x - 640, transform->y - 360);
+            camera.setPosition(transform->x - 640, transform->y - 360);
         }
-
+        // std::cout << "dt: " << deltaTime << " fps: " << (1.0f / deltaTime) << std::endl;
         renderer->setCamera(camera);
         renderer->clear();
         renderer->drawEntities(entityManager, assetManager);
