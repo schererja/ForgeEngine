@@ -60,10 +60,6 @@ void Engine::run() {
     entityManager.addComponent<PlayerComponent>(player, {200.0f});
     entityManager.addComponent<NameComponent>(player, {"Player"});
 
-    EntityID landmark = entityManager.createEntity();
-    entityManager.addComponent<TransformComponent>(landmark, {400.0f, 300.0f});
-    entityManager.addComponent<SpriteComponent>(landmark,
-                                                {"../game/assets/test.png", 48.0f, 48.0f, 0});
     // Verify entity components
     std::cout << "[FORGE] Verifying components..." << std::endl;
 
