@@ -62,4 +62,12 @@ struct NameComponent {
     std::string name;
 };
 
+// axis-aligned bounding box for simple collision detection
+struct CollisionComponent {
+    float offsetX = 0.0f;  // Offset from the entity's position
+    float offsetY = 0.0f;
+    float width = 32.0f;  // Size of the collision box
+    float height = 32.0f;
+    bool solid = true;  // Whether this entity should block movement
+};
 }  // namespace Forge

@@ -190,6 +190,7 @@ void Renderer::drawTilemap(const Tilemap& tilemap, AssetManager& assets) {
         std::cerr << "[FORGE] Cannot draw tilemap: shader program is not valid." << std::endl;
         return;
     }
+
     shader->bind();
     GLint projLoc = glGetUniformLocation(shader->getProgramID(), "uProjection");
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(viewProjection));
@@ -198,8 +199,8 @@ void Renderer::drawTilemap(const Tilemap& tilemap, AssetManager& assets) {
     int tileHeight = tilemap.getTileHeight();
 
     // UV size of one tile in the tileset
-    float uvTileWidth = (float)tileset.tileWidth / tileset.columns;
-    float uvTileHeight = (float)tileset.tileHeight / tileset.rows;
+    float uvTileWidth = 1.0f / tileset.columns;
+    float uvTileHeight = 1.0f / tileset.rows;
 
     // Build ALL tile vertices in one go for simplicity. For large maps, consider batching or
     // culling.

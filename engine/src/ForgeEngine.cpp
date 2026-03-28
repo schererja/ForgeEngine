@@ -2,9 +2,9 @@
 
 #include <iostream>
 
+#include "CollisionSystem.h"
 #include "Components.h"
 #include "Sprite.h"
-
 namespace Forge {
 
 bool Engine::initialize(const EngineConfig& config) {
@@ -32,14 +32,14 @@ void Engine::run() {
     Tilemap tilemap(20, 15, 48, 48);
     // Set up a basic tileset (assuming a 256x256 texture with 48x48 tiles)
     Tileset tileset;
-    tileset.texturePath = "../game/assets/basic-tileset-48x48px.png";
+    tileset.texturePath = "../game/assets/tileset.png";
     tileset.tileWidth = 48;
     tileset.tileHeight = 48;
-    tileset.columns = 1;  // 256/48 = 5 columns
-    tileset.rows = 1;     // 256/48 = 5 rows
+    tileset.columns = 3;  // 256/48 = 5 columns
+    tileset.rows = 3;     // 256/48 = 5 rows
     tilemap.setTileset(tileset);
     // Fill the tilemap with tileID 0 (which corresponds to the single tile in the tileset)
-    tilemap.fill(0, false);
+    tilemap.fill(1, false);
     for (int x = 0; x < 20; x++) {
         tilemap.setTile(x, 0, 0, true);   // Make the top row solid
         tilemap.setTile(x, 14, 0, true);  // Make the bottom row solid
@@ -48,7 +48,10 @@ void Engine::run() {
         tilemap.setTile(0, y, 0, true);   // Make the left column solid
         tilemap.setTile(19, y, 0, true);  // Make the right column solid
     }
-
+    tilemap.setTile(5, 5, 2, true);
+    tilemap.setTile(6, 5, 2, true);
+    tilemap.setTile(5, 6, 2, true);
+    tilemap.setTile(6, 6, 2, true);
     EntityID player = entityManager.createEntity();
 #pragma region Component Setup
     entityManager.addComponent<TransformComponent>(player, {100.0f, 100.0f});
@@ -121,20 +124,28 @@ void Engine::run() {
         auto* transform = entityManager.getComponent<TransformComponent>(player);
         auto* playerComp = entityManager.getComponent<PlayerComponent>(player);
         if (transform && playerComp) {
+            // Scale by delta time for consistent movement
             float moveSpeed =
                 playerComp->moveSpeed * deltaTime;  // Scale by delta time for consistent movement
+            float newX = transform->x;
+            float newY = transform->y;
             if (input->isKeyHeldDown(Key::RIGHT) || input->isKeyHeldDown(Key::D)) {
-                transform->x += moveSpeed;
+                newX += moveSpeed;
             }
             if (input->isKeyHeldDown(Key::LEFT) || input->isKeyHeldDown(Key::A)) {
-                transform->x -= moveSpeed;
+                newX -= moveSpeed;
             }
             if (input->isKeyHeldDown(Key::UP) || input->isKeyHeldDown(Key::W)) {
-                transform->y -= moveSpeed;
+                newY -= moveSpeed;
             }
             if (input->isKeyHeldDown(Key::DOWN) || input->isKeyHeldDown(Key::S)) {
-                transform->y += moveSpeed;
+                newY += moveSpeed;
             }
+            // Resolve collisions with the tilemap
+            glm::vec2 resolvedPos = CollisionSystem::resolveMapCollision(
+                transform->x, transform->y, 32.0f, 32.0f, newX, newY, tilemap);
+            transform->x = resolvedPos.x;
+            transform->y = resolvedPos.y;
             camera.setPosition(transform->x - 640, transform->y - 360);
         }
         // std::cout << "dt: " << deltaTime << " fps: " << (1.0f / deltaTime) << std::endl;
