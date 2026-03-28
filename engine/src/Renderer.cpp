@@ -178,4 +178,103 @@ void Renderer::drawTexture(Texture* texture, float x, float y, float width, floa
     shader->unbind();
 }
 
+void Renderer::drawTilemap(const Tilemap& tilemap, AssetManager& assets) {
+    const Tileset& tileset = tilemap.getTileset();
+    Texture* texture = assets.getTexture(tileset.texturePath);
+    if (!texture) {
+        std::cerr << "[FORGE] Cannot draw tilemap: tileset texture not found: "
+                  << tileset.texturePath << std::endl;
+        return;
+    }
+    if (!shader || !shader->isValid()) {
+        std::cerr << "[FORGE] Cannot draw tilemap: shader program is not valid." << std::endl;
+        return;
+    }
+    shader->bind();
+    GLint projLoc = glGetUniformLocation(shader->getProgramID(), "uProjection");
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(viewProjection));
+
+    int tileWidth = tilemap.getTileWidth();
+    int tileHeight = tilemap.getTileHeight();
+
+    // UV size of one tile in the tileset
+    float uvTileWidth = (float)tileset.tileWidth / tileset.columns;
+    float uvTileHeight = (float)tileset.tileHeight / tileset.rows;
+
+    // Build ALL tile vertices in one go for simplicity. For large maps, consider batching or
+    // culling.
+    std::vector<float> vertices;
+    vertices.reserve(tilemap.getMapWidth() * tilemap.getMapHeight() * 6 *
+                     4);  // 6 vertices per tile, 4 floats per vertex
+    for (int y = 0; y < tilemap.getMapHeight(); y++) {
+        for (int x = 0; x < tilemap.getMapWidth(); x++) {
+            const Tile& tile = tilemap.getTile(x, y);
+            if (!tile.visible) {
+                continue;  // Skip invisible tiles
+            }
+
+            // World position of the tile
+            float worldX = x * tileWidth;
+            float worldY = y * tileHeight;
+
+            // which row/col in the tileset texture
+            int col = tile.tileID % tileset.columns;
+            int row = tile.tileID / tileset.columns;
+
+            // UV coordinates for the tile
+            float u0 = col * uvTileWidth;
+            float v0 = row * uvTileHeight;
+            float u1 = u0 + uvTileWidth;
+            float v1 = v0 + uvTileHeight;
+
+            // Triangles for this tile
+            vertices.insert(vertices.end(), {
+
+                                                worldX,
+                                                worldY,
+                                                u0,
+                                                v0,  // top left
+                                                worldX,
+                                                worldY + tileHeight,
+                                                u0,
+                                                v1,  // bottom left
+                                                worldX + tileWidth,
+                                                worldY + tileHeight,
+                                                u1,
+                                                v1,  // bottom right
+
+                                            });
+
+            // Triangle 2
+            vertices.insert(vertices.end(), {
+
+                                                worldX, worldY, u0,
+                                                v0,  // top left
+                                                worldX + tileWidth, worldY + tileHeight, u1,
+                                                v1,  // bottom right
+                                                worldX + tileWidth, worldY, u1,
+                                                v0  // top right
+                                            });
+            if (vertices.empty()) {
+                continue;  // Skip if no vertices to draw
+            }
+            shader->bind();
+            GLint projLoc = glGetUniformLocation(shader->getProgramID(), "uProjection");
+            glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(viewProjection));
+
+            // Upload all tile vertices to GPU
+            glBindVertexArray(vertexArray);
+            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+            glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(),
+                         GL_DYNAMIC_DRAW);
+            texture->bind(0);
+
+            // One draw call for the entire tilemap. For large maps, consider chunking and culling.
+            glDrawArrays(GL_TRIANGLES, 0, (GLsizei)(vertices.size() / 4));
+            texture->unbind();
+            glBindVertexArray(0);
+            shader->unbind();
+        }
+    }
+}
 }  // namespace Forge

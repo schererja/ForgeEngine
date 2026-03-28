@@ -12,6 +12,7 @@
 #include "Shader.h"
 #include "Sprite.h"
 #include "Texture.h"
+#include "Tilemap.h"
 namespace Forge {
 
 // Minimal renderer responsible for clearing and drawing a test primitive.
@@ -32,6 +33,9 @@ class Renderer {
     // Draw all entities with Sprite components. This is a very basic implementation for
     // demonstration purposes.
     void drawEntities(EntityManager& entityManager, AssetManager& assetManager);
+
+    // draw the tilemap
+    void drawTilemap(const Tilemap& tilemap, AssetManager& assetManager);
 
    private:
     GLuint vertexArray = 0;

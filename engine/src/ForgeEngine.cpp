@@ -28,6 +28,26 @@ void Engine::run() {
                   << std::endl;
         return;
     }
+    // Create a simple test tilemap for demonstration
+    Tilemap tilemap(20, 15, 48, 48);
+    // Set up a basic tileset (assuming a 256x256 texture with 48x48 tiles)
+    Tileset tileset;
+    tileset.texturePath = "../game/assets/basic-tileset-48x48px.png";
+    tileset.tileWidth = 48;
+    tileset.tileHeight = 48;
+    tileset.columns = 1;  // 256/48 = 5 columns
+    tileset.rows = 1;     // 256/48 = 5 rows
+    tilemap.setTileset(tileset);
+    // Fill the tilemap with tileID 0 (which corresponds to the single tile in the tileset)
+    tilemap.fill(0, false);
+    for (int x = 0; x < 20; x++) {
+        tilemap.setTile(x, 0, 0, true);   // Make the top row solid
+        tilemap.setTile(x, 14, 0, true);  // Make the bottom row solid
+    }
+    for (int y = 0; y < 15; y++) {
+        tilemap.setTile(0, y, 0, true);   // Make the left column solid
+        tilemap.setTile(19, y, 0, true);  // Make the right column solid
+    }
 
     EntityID player = entityManager.createEntity();
 #pragma region Component Setup
@@ -120,6 +140,7 @@ void Engine::run() {
         // std::cout << "dt: " << deltaTime << " fps: " << (1.0f / deltaTime) << std::endl;
         renderer->setCamera(camera);
         renderer->clear();
+        renderer->drawTilemap(tilemap, assetManager);
         renderer->drawEntities(entityManager, assetManager);
         window->swapBuffers();
     }
