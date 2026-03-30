@@ -1,5 +1,6 @@
 #include <ForgeEngine.h>
 
+#include "OverworldScene.h"
 int main(int argc, char* argv[]) {
     (void)argc;
     (void)argv;
@@ -11,9 +12,10 @@ int main(int argc, char* argv[]) {
     config.windowHeight = 600;
 
     if (!engine.initialize(config)) {
-        return -1;
+        return 1;
     }
-
+    // push initial scene
+    engine.getSceneManager().push(std::make_unique<OverworldScene>(), engine);
     engine.run();
     engine.shutdown();
     return 0;

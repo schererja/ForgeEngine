@@ -8,6 +8,7 @@
 #include "EntityManager.h"
 #include "Input.h"
 #include "Renderer.h"
+#include "SceneManager.h"
 #include "Window.h"
 namespace Forge {
 
@@ -33,9 +34,16 @@ class Engine {
     // Releases all owned systems.
     void shutdown();
 
-    // Accessors for core systems. These are non-owning raw pointers for simplicity.
+    // Accessors for core systems. These are non-owning raw pointers for
+    // simplicity.
     EntityManager& getEntityManager() { return entityManager; }
     AssetManager& getAssetManager() { return assetManager; }
+    SceneManager& getSceneManager() { return sceneManager; }
+    Renderer& getRenderer() { return *renderer; }
+    Input& getInput() { return *input; }
+    Camera& getCamera() { return camera; }
+    int getWidth() { return width; }
+    int getHeight() { return height; }
 
    private:
     Window* window = nullptr;
@@ -43,5 +51,9 @@ class Engine {
     Input* input = nullptr;
     EntityManager entityManager;
     AssetManager assetManager;
+    SceneManager sceneManager;
+    Camera camera{1280, 720};
+    int width = 1280;
+    int height = 720;
 };
 }  // namespace Forge
