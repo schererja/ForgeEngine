@@ -17,6 +17,7 @@ target_include_directories(ForgeEngine
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/thirdparty/stb
+        ${CMAKE_SOURCE_DIR}/thirdparty/miniaudio
 )
 # Link SDL2
 target_link_libraries(ForgeEngine

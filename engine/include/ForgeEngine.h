@@ -3,6 +3,7 @@
 #include <string>
 
 #include "AssetManager.h"
+#include "AudioSystem.h"
 #include "Camera.h"
 #include "Components.h"
 #include "EntityManager.h"
@@ -42,6 +43,7 @@ class Engine {
     Renderer& getRenderer() { return *renderer; }
     Input& getInput() { return *input; }
     Camera& getCamera() { return camera; }
+    AudioSystem& getAudio() { return audioSystem; }
     int getWidth() { return width; }
     int getHeight() { return height; }
 
@@ -52,6 +54,7 @@ class Engine {
     EntityManager entityManager;
     AssetManager assetManager;
     SceneManager sceneManager;
+    AudioSystem audioSystem;
     Camera camera{1280, 720};
     int width = 1280;
     int height = 720;

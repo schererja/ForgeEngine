@@ -49,9 +49,11 @@ void OverworldScene::onEnter(Forge::Engine& engine) {
                                                                    {200.0f});
     engine.getEntityManager().addComponent<Forge::NameComponent>(playerEntity,
                                                                  {"Player"});
+    engine.getAudio().playMusic("../game/assets/audio/theme.mp3", 0.5f);
 }
 
 void OverworldScene::onExit(Forge::Engine& engine) {
+    engine.getAudio().stopMusic();
     std::cout << "[OverworldScene] Exiting scene." << std::endl;
     engine.getEntityManager().destroyEntity(playerEntity);
     playerEntity = Forge::NULL_ENTITY;

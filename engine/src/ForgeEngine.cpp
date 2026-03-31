@@ -19,6 +19,10 @@ bool Engine::initialize(const EngineConfig& config) {
         std::cerr << "[FORGE] Failed to initialize window." << std::endl;
         return false;
     }
+    if (!audioSystem.initialize()) {
+        std::cerr << "[FORGE] Failed to initialize audio system." << std::endl;
+        return false;
+    }
 
     std::cout << "[FORGE] Engine initialized successfully." << std::endl;
     return true;
@@ -95,6 +99,7 @@ void Engine::run() {
 }
 
 void Engine::shutdown() {
+    audioSystem.shutdown();
     assetManager.unloadAll();
     delete input;
     delete renderer;
