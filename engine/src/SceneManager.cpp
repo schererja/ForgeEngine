@@ -2,28 +2,29 @@
 
 #include <iostream>
 
+#include "Log.h"
 namespace Forge {
 void SceneManager::push(std::unique_ptr<Scene> scene, Engine& engine) {
     scene->onEnter(engine);
     scenes.push_back(std::move(scene));
-    std::cout << "[SceneManager] Pushed new scene. Total scenes: "
-              << scenes.size() << std::endl;
+    FORGE_INFO("Pushed new scene. Total scenes: " +
+               std::to_string(scenes.size()));
 }
 
 void SceneManager::pop(Engine& engine) {
     if (scenes.empty()) {
-        std::cerr << "[SceneManager] Cannot pop scene: no active scenes."
-                  << std::endl;
+        FORGE_ERROR("Cannot pop scene: no active scenes.");
+
         return;
     }
     scenes.back()->onExit(engine);
     scenes.pop_back();
-    std::cout << "[SceneManager] Popped scene. Total scenes: " << scenes.size()
-              << std::endl;
+    FORGE_INFO("Popped scene. Total scenes: " + std::to_string(scenes.size()));
+
     // Resume the scene below if there is one
     if (!scenes.empty()) {
-        std::cout << "[SceneManager] Resuming scene below. Total scenes: "
-                  << scenes.size() << std::endl;
+        FORGE_INFO("Resuming scene below. Total scenes: " +
+                   std::to_string(scenes.size()));
     }
 }
 
@@ -34,10 +35,9 @@ void SceneManager::replace(std::unique_ptr<Scene> scene, Engine& engine) {
     }
     scene->onEnter(engine);
     scenes.push_back(std::move(scene));
-    std::cout << "[SceneManager] Replaced top scene. Total scenes: "
-              << scenes.size() << std::endl;
+    FORGE_INFO("Replaced top scene. Total scenes: " +
+               std::to_string(scenes.size()));
 }
-
 void SceneManager::update(Engine& engine, float deltaTime) {
     if (scenes.empty()) {
         return;

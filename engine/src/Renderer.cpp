@@ -4,6 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 
+#include "Log.h"
 namespace Forge {
 
 // Minimal GLSL shaders embedded as strings for bootstrapping.
@@ -11,9 +12,10 @@ namespace Forge {
 Renderer::Renderer(int screenWidth, int screenHeight) {
     glClearColor(0.117f, 0.117f, 0.117f, 1.0f);
 
-    // Orthographic projection with (0,0) at top-left and (screenWidth, screenHeight) at
-    // bottom-right
-    viewProjection = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f, -1.0f, 1.0f);
+    // Orthographic projection with (0,0) at top-left and (screenWidth,
+    // screenHeight) at bottom-right
+    viewProjection = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight,
+                                0.0f, -1.0f, 1.0f);
     setupQuad();
 }
 
@@ -26,7 +28,9 @@ Renderer::~Renderer() {
     }
 }
 
-void Renderer::setClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
+void Renderer::setClearColor(float r, float g, float b, float a) {
+    glClearColor(r, g, b, a);
+}
 
 void Renderer::clear() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }
 
@@ -52,11 +56,13 @@ void Renderer::setupQuad() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // Position
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float),
+                          (void*)0);
     glEnableVertexAttribArray(0);
 
     // UV
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float),
+                          (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);
@@ -64,88 +70,33 @@ void Renderer::setupQuad() {
     shader = std::make_unique<Shader>("game/assets/shaders/sprite.vert",
                                       "game/assets/shaders/sprite.frag");
     if (!shader->isValid()) {
-        std::cerr << "[Forge] Failed to create shader program." << std::endl;
+        FORGE_ERROR("Failed to create shader program.");
     }
 }
-// void Renderer::drawSprite(const Sprite& sprite) {
-//     if (!shader || !shader->isValid()) {
-//         std::cerr << "[Forge] Cannot draw sprite: shader program is not valid." << std::endl;
-//         return;
-//     }
-//     const Rect& uv = sprite.getUVRegion();
-//     float x = sprite.getX();
-//     float y = sprite.getY();
-//     float width = (float)sprite.getWidth();
-//     float height = (float)sprite.getHeight();
-
-//     // build quad vertex data with position and UVs based on sprite properties
-//     float vertices[] = {
-//         // position       // UV
-//         x,
-//         y,
-//         uv.x,
-//         uv.y,  // top left
-//         x,
-//         y + height,
-//         uv.x,
-//         uv.y + uv.height,  // bottom
-//         x + width,
-//         y + height,
-//         uv.x + uv.width,
-//         uv.y + uv.height,  // bottom right
-//         x,
-//         y,
-//         uv.x,
-//         uv.y,  // top left
-//         x + width,
-//         y + height,
-//         uv.x + uv.width,
-//         uv.y + uv.height,  // bottom right
-//         x + width,
-//         y,
-//         uv.x + uv.width,
-//         uv.y  // top right
-//     };
-
-//     shader->bind();
-
-//     // Upload projection Matrix to shader
-
-//     GLint projLoc = glGetUniformLocation(shader->getProgramID(), "uProjection");
-//     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(viewProjection));
-
-//     // upload updated vertices to GPU
-//     glBindVertexArray(vertexArray);
-//     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-//     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-
-//     sprite.getTexture().bind(0);
-//     glDrawArrays(GL_TRIANGLES, 0, 6);
-
-//     sprite.getTexture().unbind();
-//     glBindVertexArray(0);
-//     shader->unbind();
-// }
 
 void Renderer::setCamera(const Camera& camera) {
     // shader->bind();
-    // GLint projLoc = glGetUniformLocation(shader->getProgramID(), "uProjection");
-    // glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(camera.getViewProjection()));
-    // shader->unbind();
+    // GLint projLoc = glGetUniformLocation(shader->getProgramID(),
+    // "uProjection"); glUniformMatrix4fv(projLoc, 1, GL_FALSE,
+    // glm::value_ptr(camera.getViewProjection())); shader->unbind();
     viewProjection = camera.getViewProjection();
 }
 
-void Renderer::drawEntities(EntityManager& entityManager, AssetManager& assetManager) {
+void Renderer::drawEntities(EntityManager& entityManager,
+                            AssetManager& assetManager) {
     entityManager.forEach<TransformComponent, SpriteComponent>(
-        [this, &assetManager](EntityID id, TransformComponent& transform, SpriteComponent& sprite) {
+        [this, &assetManager](EntityID id, TransformComponent& transform,
+                              SpriteComponent& sprite) {
             Texture* texture = assetManager.getTexture(sprite.texturePath);
             if (texture) {
-                drawTexture(texture, transform.x, transform.y, sprite.width, sprite.height);
+                drawTexture(texture, transform.x, transform.y, sprite.width,
+                            sprite.height);
             }
         });
 }
 
-void Renderer::drawTexture(Texture* texture, float x, float y, float width, float height) {
+void Renderer::drawTexture(Texture* texture, float x, float y, float width,
+                           float height) {
     if (!shader || !shader->isValid()) {
         return;
     }
@@ -182,12 +133,14 @@ void Renderer::drawTilemap(const Tilemap& tilemap, AssetManager& assets) {
     const Tileset& tileset = tilemap.getTileset();
     Texture* texture = assets.getTexture(tileset.texturePath);
     if (!texture) {
-        std::cerr << "[FORGE] Cannot draw tilemap: tileset texture not found: "
-                  << tileset.texturePath << std::endl;
+        FORGE_ERROR("Cannot draw tilemap: tileset texture not found: " +
+                    tileset.texturePath);
+
         return;
     }
     if (!shader || !shader->isValid()) {
-        std::cerr << "[FORGE] Cannot draw tilemap: shader program is not valid." << std::endl;
+        FORGE_ERROR("Cannot draw tilemap: shader program is not valid.");
+
         return;
     }
 
@@ -202,8 +155,8 @@ void Renderer::drawTilemap(const Tilemap& tilemap, AssetManager& assets) {
     float uvTileWidth = 1.0f / tileset.columns;
     float uvTileHeight = 1.0f / tileset.rows;
 
-    // Build ALL tile vertices in one go for simplicity. For large maps, consider batching or
-    // culling.
+    // Build ALL tile vertices in one go for simplicity. For large maps,
+    // consider batching or culling.
     std::vector<float> vertices;
     vertices.reserve(tilemap.getMapWidth() * tilemap.getMapHeight() * 6 *
                      4);  // 6 vertices per tile, 4 floats per vertex
@@ -247,30 +200,34 @@ void Renderer::drawTilemap(const Tilemap& tilemap, AssetManager& assets) {
                                             });
 
             // Triangle 2
-            vertices.insert(vertices.end(), {
+            vertices.insert(vertices.end(),
+                            {
 
-                                                worldX, worldY, u0,
-                                                v0,  // top left
-                                                worldX + tileWidth, worldY + tileHeight, u1,
-                                                v1,  // bottom right
-                                                worldX + tileWidth, worldY, u1,
-                                                v0  // top right
-                                            });
+                                worldX, worldY, u0,
+                                v0,  // top left
+                                worldX + tileWidth, worldY + tileHeight, u1,
+                                v1,  // bottom right
+                                worldX + tileWidth, worldY, u1,
+                                v0  // top right
+                            });
             if (vertices.empty()) {
                 continue;  // Skip if no vertices to draw
             }
             shader->bind();
-            GLint projLoc = glGetUniformLocation(shader->getProgramID(), "uProjection");
-            glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(viewProjection));
+            GLint projLoc =
+                glGetUniformLocation(shader->getProgramID(), "uProjection");
+            glUniformMatrix4fv(projLoc, 1, GL_FALSE,
+                               glm::value_ptr(viewProjection));
 
             // Upload all tile vertices to GPU
             glBindVertexArray(vertexArray);
             glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-            glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(),
-                         GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float),
+                         vertices.data(), GL_DYNAMIC_DRAW);
             texture->bind(0);
 
-            // One draw call for the entire tilemap. For large maps, consider chunking and culling.
+            // One draw call for the entire tilemap. For large maps, consider
+            // chunking and culling.
             glDrawArrays(GL_TRIANGLES, 0, (GLsizei)(vertices.size() / 4));
             texture->unbind();
             glBindVertexArray(0);

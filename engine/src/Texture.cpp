@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+#include "Log.h"
 namespace Forge {
 Texture::Texture(const std::string& filePath) {
     // Tell stb_image to flip images vertically
@@ -13,11 +14,13 @@ Texture::Texture(const std::string& filePath) {
     // stbi_set_flip_vertically_on_load(true);
 
     int channels;
-    unsigned char* data = stbi_load(filePath.c_str(), &width, &height, &channels, 4);
+    unsigned char* data =
+        stbi_load(filePath.c_str(), &width, &height, &channels, 4);
 
     if (!data) {
-        std::cerr << "[Forge] Failed to load texture: " << filePath << std::endl;
-        std::cerr << "[Forge] stb_image: " << stbi_failure_reason() << std::endl;
+        FORGE_ERROR("Failed to load texture: " + filePath +
+                    "\nReason: " + stbi_failure_reason());
+
         return;
     }
 
@@ -29,28 +32,29 @@ Texture::Texture(const std::string& filePath) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    // Texture Filtering - use linear filtering for minification and magnification
+    // Texture Filtering - use linear filtering for minification and
+    // magnification
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     // upload pixel data to GPU
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     // Free the image memory from the cpu as the gpu has it now
     stbi_image_free(data);
 
     glBindTexture(GL_TEXTURE_2D, 0);  // Unbind the texture
-
-    std::cout << "[Forge] Loaded texture: " << filePath << " (" << width << "x" << height << ")"
-              << std::endl;
+    FORGE_INFO("Loaded texture: " + filePath + " (" + std::to_string(width) +
+               "x" + std::to_string(height) + ")");
 }
 
 // Deconstructor to clean up the texture resource
 Texture::~Texture() {
     if (textureID != 0) {
         glDeleteTextures(1, &textureID);
-        std::cout << "[Forge] Deleted texture ID: " << textureID << std::endl;
+        FORGE_DEBUG("Deleted texture ID: " + std::to_string(textureID));
     }
 }
 // Move constructor

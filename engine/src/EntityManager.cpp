@@ -26,5 +26,7 @@ void EntityManager::destroyEntity(EntityID id) {
     recycledIDs.push(id);  // Recycle the ID for future use
 }
 
-bool EntityManager::isEntityAlive(EntityID id) const { return aliveEntities.count(id) > 0; }
+bool EntityManager::isEntityAlive(EntityID id) const {
+    return aliveEntities.count(id) > 0;
+}
 }  // namespace Forge

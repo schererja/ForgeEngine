@@ -6,35 +6,41 @@
 #include <iostream>
 
 #include "Input.h"
-
+#include "Log.h"
 namespace Forge {
 
-Window::Window(const std::string& title, int width, int height) : width(width), height(height) {
+Window::Window(const std::string& title, int width, int height)
+    : width(width), height(height) {
     // Initialize SDL video subsystem before any window/context creation.
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        std::cerr << "[FORGE] SDL_Init Error: " << SDL_GetError() << std::endl;
+        FORGE_ERROR("SDL_Init Error: " + std::string(SDL_GetError()));
         return;
     }
 
     // Request an OpenGL 3.3 core profile context.
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
+                        SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
     // Create SDL window with OpenGL support.
-    sdlWindow = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                 width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+    sdlWindow = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED,
+                                 SDL_WINDOWPOS_CENTERED, width, height,
+                                 SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 
     if (!sdlWindow) {
-        std::cerr << "[FORGE] SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
+        FORGE_ERROR("SDL_CreateWindow Error: " + std::string(SDL_GetError()));
+
         return;
     }
 
     // Create OpenGL context bound to this window.
     glContext = SDL_GL_CreateContext(sdlWindow);
     if (!glContext) {
-        std::cerr << "[FORGE] SDL_GL_CreateContext Error: " << SDL_GetError() << std::endl;
+        FORGE_ERROR("SDL_GL_CreateContext Error: " +
+                    std::string(SDL_GetError()));
+
         SDL_DestroyWindow(sdlWindow);
         sdlWindow = nullptr;
         return;
@@ -42,7 +48,7 @@ Window::Window(const std::string& title, int width, int height) : width(width), 
 
     // Initialize GLEW after a valid OpenGL context is active.
     if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress)) {
-        std::cerr << "[Forge] GLAD initialization failed" << std::endl;
+        FORGE_ERROR("GLAD initialization failed");
         SDL_GL_DeleteContext(glContext);
         SDL_DestroyWindow(sdlWindow);
         SDL_Quit();
@@ -53,8 +59,9 @@ Window::Window(const std::string& title, int width, int height) : width(width), 
     SDL_GL_SetSwapInterval(1);
 
     // Log active graphics runtime versions for diagnostics.
-    std::cout << "[FORGE] OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
-    std::cout << "[FORGE] GLAD initialized successfully" << std::endl;
+    FORGE_INFO("OpenGL Version: " +
+               std::string((const char*)glGetString(GL_VERSION)));
+    FORGE_INFO("GLAD initialized successfully");
 
     open = true;
 }
@@ -113,14 +120,14 @@ void Window::swapBuffers() {
     }
 }
 
-void Window::pollEvents(Input *input) {
+void Window::pollEvents(Input* input) {
     if (input) {
         input->beginFrame();
     }
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_QUIT ||
-            (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {
+        if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN &&
+                                       event.key.keysym.sym == SDLK_ESCAPE)) {
             open = false;
         }
         if (input) {

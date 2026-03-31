@@ -28,4 +28,5 @@ target_link_libraries(ForgeEngine
         OpenGL::GL
         glm::glm
         Forge::Assets
+        spdlog::spdlog
 )

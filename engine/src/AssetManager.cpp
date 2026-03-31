@@ -1,20 +1,22 @@
 #include "AssetManager.h"
 
-#include <iostream>
+#include "Log.h"
 
 namespace Forge {
 
-Texture* AssetManager::getTexture(const std::string& filePath) {  // Check the cache first
+Texture* AssetManager::getTexture(
+    const std::string& filePath) {  // Check the cache first
     auto it = textures.find(filePath);
     if (it != textures.end()) {
         return it->second.get();
     }
 
     // Load the texture and cache it
-    std::cout << "[FORGE] Loading texture: " << filePath << std::endl;
+    FORGE_INFO("Loading texture: {}", filePath);
+
     auto texture = std::make_unique<Texture>(filePath);
     if (!texture->isValid()) {
-        std::cerr << "[FORGE] Failed to load texture: " << filePath << std::endl;
+        FORGE_ERROR("Failed to load texture: {}", filePath);
         return nullptr;
     }
     Texture* texturePtr = texture.get();
@@ -25,13 +27,14 @@ Texture* AssetManager::getTexture(const std::string& filePath) {  // Check the c
 void AssetManager::unloadTexture(const std::string& filePath) {
     auto it = textures.find(filePath);
     if (it != textures.end()) {
-        std::cout << "[FORGE] Unloading texture: " << filePath << std::endl;
+        FORGE_WARN("Unloading texture: {}", filePath);
+
         textures.erase(it);
     }
 }
 
 void AssetManager::unloadAll() {
-    std::cout << "[FORGE] Unloading all assets" << std::endl;
+    FORGE_INFO("Unloading all assets");
     textures.clear();
 }
 }  // namespace Forge

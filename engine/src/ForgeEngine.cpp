@@ -4,10 +4,14 @@
 
 #include "CollisionSystem.h"
 #include "Components.h"
+#include "Log.h"
 #include "Sprite.h"
 namespace Forge {
 
 bool Engine::initialize(const EngineConfig& config) {
+    // Logging has to be first
+    Log::init();
+
     width = config.windowWidth;
     height = config.windowHeight;
     window = new Window(config.windowTitle, width, height);
@@ -16,29 +20,28 @@ bool Engine::initialize(const EngineConfig& config) {
     camera = Camera(width, height);
 
     if (!window->isOpen()) {
-        std::cerr << "[FORGE] Failed to initialize window." << std::endl;
+        FORGE_ERROR("Failed to initialize window.");
         return false;
     }
     if (!audioSystem.initialize()) {
-        std::cerr << "[FORGE] Failed to initialize audio system." << std::endl;
+        FORGE_ERROR("Failed to initialize audio system.");
         return false;
     }
-
-    std::cout << "[FORGE] Engine initialized successfully." << std::endl;
+    FORGE_INFO("Engine initialized successfully.");
     return true;
 }
 
 void Engine::run() {
     if (!window || !renderer) {
-        std::cerr << "[FORGE] Engine not initialized. Call initialize() before "
-                     "run()."
-                  << std::endl;
+        FORGE_ERROR(
+            "Engine not properly initialized. Call initialize() before run().");
+
         return;
     }
     if (sceneManager.sceneCount() == 0) {
-        std::cerr << "[FORGE] No active scenes. Please push a scene before "
-                     "running the engine."
-                  << std::endl;
+        FORGE_WARN(
+            "No active scenes. Please push a scene before running the engine.");
+
         return;
     }
 
@@ -47,8 +50,7 @@ void Engine::run() {
     Uint64 frequency = SDL_GetPerformanceFrequency();
     float deltaTime = 0.0f;
     float maxDelta = 0.05f;
-
-    std::cout << "[FORGE] Starting main loop." << std::endl;
+    FORGE_INFO("Entering main loop.");
     float fpsAccumulator = 0.0f;
     int fpsFrameCount = 0;
     float displayFPS = 0.0f;
@@ -83,19 +85,16 @@ void Engine::run() {
 
         if (deltaTime >
             0.033f) {  // Warn if frame took longer than ~33ms (30 FPS)
-            std::cerr << "[FORGE] Warning: Slow frame detected. Delta time: "
-                      << deltaTime << " seconds." << std::endl;
+            FORGE_WARN("Slow frame detected. Delta time: " +
+                       std::to_string(deltaTime) + " seconds.");
         }
 
         if (sceneManager.sceneCount() == 0) {
-            std::cout
-                << "[FORGE] No active scenes remaining. Exiting main loop."
-                << std::endl;
+            FORGE_WARN("No active scenes remaining. Exiting main loop.");
             break;
         }
     }
-
-    std::cout << "[FORGE] Main loop exited." << std::endl;
+    FORGE_INFO("Exiting main loop.");
 }
 
 void Engine::shutdown() {
@@ -108,6 +107,7 @@ void Engine::shutdown() {
     renderer = nullptr;
     window = nullptr;
 
-    std::cout << "[FORGE] Engine shutdown complete." << std::endl;
+    FORGE_INFO("Engine shutdown complete.");
+    Log::shutdown();
 }
 }  // namespace Forge

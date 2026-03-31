@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+#include "Log.h"
 namespace Forge {
 AudioSystem::AudioSystem() = default;
 AudioSystem::~AudioSystem() { shutdown(); }
@@ -14,14 +15,15 @@ bool AudioSystem::initialize() {
     engine = new ma_engine();
     ma_result result = ma_engine_init(nullptr, engine);
     if (result != MA_SUCCESS) {
-        std::cerr << "Failed to initialize audio engine: " << result
-                  << std::endl;
+        FORGE_ERROR("Failed to initialize audio engine: " +
+                    std::to_string(result));
         delete engine;
         engine = nullptr;
         return false;
     }
     initialized = true;
-    std::cout << "Audio engine initialized successfully." << std::endl;
+    FORGE_INFO("Audio engine initialized successfully.");
+
     return true;
 }
 
@@ -36,8 +38,8 @@ void AudioSystem::playMusic(const std::string& filePath, float volume) {
         ma_sound_init_from_file(engine, filePath.c_str(), MA_SOUND_FLAG_STREAM,
                                 nullptr, nullptr, musicSound);
     if (result != MA_SUCCESS) {
-        std::cerr << "Failed to load music: " << filePath
-                  << " Error: " << result << std::endl;
+        FORGE_ERROR("Failed to load music: {} Error: {}", filePath,
+                    std::to_string(result));
         delete musicSound;
         musicSound = nullptr;
         return;
@@ -46,8 +48,7 @@ void AudioSystem::playMusic(const std::string& filePath, float volume) {
     ma_sound_set_looping(musicSound, MA_TRUE);
     ma_sound_set_volume(musicSound, volume);
     ma_sound_start(musicSound);
-
-    std::cout << "Playing music: " << filePath << std::endl;
+    FORGE_INFO("Playing music: {}", filePath);
 }
 
 void AudioSystem::stopMusic() {
@@ -55,14 +56,14 @@ void AudioSystem::stopMusic() {
         ma_sound_uninit(musicSound);
         delete musicSound;
         musicSound = nullptr;
-        std::cout << "Music stopped." << std::endl;
+        FORGE_INFO("Music stopped.");
     }
 }
 
 void AudioSystem::setMusicVolume(float volume) {
     if (musicSound) {
         ma_sound_set_volume(musicSound, volume);
-        std::cout << "Music volume set to: " << volume << std::endl;
+        FORGE_INFO("Music volume set to: {}", std::to_string(volume));
     }
 }
 
@@ -80,17 +81,18 @@ void AudioSystem::playSoundEffect(const std::string& filePath) {
     // ma_engine_play_sound() will handle loading and playing the sound effect
     ma_result result = ma_engine_play_sound(engine, filePath.c_str(), nullptr);
     if (result != MA_SUCCESS) {
-        std::cerr << "Failed to play sound effect: " << filePath
-                  << " Error: " << result << std::endl;
+        FORGE_ERROR("Failed to play sound effect: {} Error: {}", filePath,
+                    std::to_string(result));
+
     } else {
-        std::cout << "Playing sound effect: " << filePath << std::endl;
+        FORGE_INFO("Playing sound effect: {}", filePath);
     }
 }
 
 void AudioSystem::setMasterVolume(float volume) {
     if (initialized) {
         ma_engine_set_volume(engine, volume);
-        std::cout << "Master volume set to: " << volume << std::endl;
+        FORGE_INFO("Master volume set to: {}", std::to_string(volume));
     }
 }
 
@@ -106,6 +108,6 @@ void AudioSystem::shutdown() {
         engine = nullptr;
     }
     initialized = false;
-    std::cout << "Audio engine shut down." << std::endl;
+    FORGE_INFO("Audio engine shut down.");
 }
 }  // namespace Forge

@@ -3,11 +3,12 @@
 #include <CollisionSystem.h>
 #include <Components.h>
 #include <Input.h>
+#include <Log.h>
 
 #include <iostream>
 
 void OverworldScene::onEnter(Forge::Engine& engine) {
-    std::cout << "[OverworldScene] Entering scene." << std::endl;
+    FORGE_INFO("Entering OverworldScene.");
     // Create a simple tilemap
     tilemap = Forge::Tilemap(20, 15, 32, 32);
     Forge::Tileset tileset;
@@ -54,7 +55,7 @@ void OverworldScene::onEnter(Forge::Engine& engine) {
 
 void OverworldScene::onExit(Forge::Engine& engine) {
     engine.getAudio().stopMusic();
-    std::cout << "[OverworldScene] Exiting scene." << std::endl;
+    FORGE_INFO("Exiting OverworldScene and cleaning up resources.");
     engine.getEntityManager().destroyEntity(playerEntity);
     playerEntity = Forge::NULL_ENTITY;
 }
