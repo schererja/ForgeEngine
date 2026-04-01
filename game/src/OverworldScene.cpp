@@ -4,6 +4,7 @@
 #include <Components.h>
 #include <Input.h>
 #include <Log.h>
+#include <MapLoader.h>
 
 #include <iostream>
 
@@ -13,50 +14,39 @@ void OverworldScene::onEnter(Forge::Engine& engine) {
         engine.getConfig().getString("paths.assets", "../game/assets/");
     std::string audioPath =
         engine.getConfig().getString("paths.audio", assetPath + "audio/");
-    // Create a simple tilemap
-    tilemap = Forge::Tilemap(20, 15, 32, 32);
-    Forge::Tileset tileset;
+    std::string mapsPath =
+        engine.getConfig().getString("paths.maps", assetPath + "maps/");
+    // Load map from file
+    Forge::MapData mapData =
+        Forge::MapLoader::loadFromFile(mapsPath + "overworld.lua", assetPath);
 
-    tileset.texturePath = assetPath + "tileset.png";
-    tileset.tileWidth = 48;
-    tileset.tileHeight = 48;
-    tileset.columns = 3;
-    tileset.rows = 3;
-    tilemap.setTileset(tileset);
-
-    tilemap.fill(1, false);  // Fill with non-solid tiles
-
-    // Stone border
-    for (int x = 0; x < 20; x++) {
-        tilemap.setTile(x, 0, 0, true);
-        tilemap.setTile(x, 14, 0, true);
+    if (!mapData.valid) {
+        FORGE_ERROR("Failed to load map data. Falling back to default map.");
+        return;
     }
 
-    for (int y = 0; y < 15; y++) {
-        tilemap.setTile(0, y, 0, true);
-        tilemap.setTile(19, y, 0, true);
+    tilemap = std::move(mapData.tilemap);
+
+    // Spawn entities
+    for (const auto& spawn : mapData.spawns) {
+        if (spawn.type == "Player") {
+            float w = spawn.width > 0 ? spawn.width : 32.0f;
+            float h = spawn.height > 0 ? spawn.height : 32.0f;
+            playerEntity = engine.getEntityManager().createEntity();
+            engine.getEntityManager().addComponent<Forge::TransformComponent>(
+                playerEntity, {spawn.x, spawn.y});
+            engine.getEntityManager().addComponent<Forge::SpriteComponent>(
+                playerEntity, {assetPath + "sprite.png", w, h, 0});
+            engine.getEntityManager().addComponent<Forge::PlayerComponent>(
+                playerEntity, {200.0f});
+            engine.getEntityManager().addComponent<Forge::NameComponent>(
+                playerEntity, {spawn.name});
+        }
     }
 
-    // Water obstacle
-    tilemap.setTile(5, 5, 2, true);
-    tilemap.setTile(5, 6, 2, true);
-    tilemap.setTile(5, 7, 2, true);
-    tilemap.setTile(6, 5, 2, true);
-    tilemap.setTile(7, 5, 2, true);
-
-    // Create player entity
-    playerEntity = engine.getEntityManager().createEntity();
-    engine.getEntityManager().addComponent<Forge::TransformComponent>(
-        playerEntity, {64.0f, 64.0f});
-    engine.getEntityManager().addComponent<Forge::SpriteComponent>(
-        playerEntity, {"../game/assets/sprite.png", 32.0f, 32.0f, 1});
-    engine.getEntityManager().addComponent<Forge::PlayerComponent>(playerEntity,
-                                                                   {200.0f});
-    engine.getEntityManager().addComponent<Forge::NameComponent>(playerEntity,
-                                                                 {"Player"});
-    engine.getAudio().playMusic("../game/assets/audio/theme.mp3", 0.5f);
+    // Play background music
+    engine.getAudio().playMusic(audioPath + "theme.mp3", 0.5f);
 }
-
 void OverworldScene::onExit(Forge::Engine& engine) {
     engine.getAudio().stopMusic();
     FORGE_INFO("Exiting OverworldScene and cleaning up resources.");
