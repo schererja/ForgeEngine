@@ -16,10 +16,12 @@ class AssetManager {
     // Get a texture by file path. Loads it if not already loaded.
     Texture* getTexture(const std::string& filePath);
 
-    // Unload a texture from memory. This will remove it from the cache and free GPU resources.
+    // Unload a texture from memory. This will remove it from the cache and free
+    // GPU resources.
     void unloadTexture(const std::string& filePath);
 
-    // Unload all assets from memory. This is useful for cleanup when shutting down the engine.
+    // Unload all assets from memory. This is useful for cleanup when shutting
+    // down the engine.
     void unloadAll();
 
     // How many textures are currently loaded (for debugging/analytics).

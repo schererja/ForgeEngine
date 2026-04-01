@@ -9,11 +9,15 @@
 
 void OverworldScene::onEnter(Forge::Engine& engine) {
     FORGE_INFO("Entering OverworldScene.");
+    std::string assetPath =
+        engine.getConfig().getString("paths.assets", "../game/assets/");
+    std::string audioPath =
+        engine.getConfig().getString("paths.audio", assetPath + "audio/");
     // Create a simple tilemap
     tilemap = Forge::Tilemap(20, 15, 32, 32);
     Forge::Tileset tileset;
 
-    tileset.texturePath = "../game/assets/tileset.png";
+    tileset.texturePath = assetPath + "tileset.png";
     tileset.tileWidth = 48;
     tileset.tileHeight = 48;
     tileset.columns = 3;

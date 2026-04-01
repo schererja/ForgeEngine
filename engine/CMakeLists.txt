@@ -29,4 +29,6 @@ target_link_libraries(ForgeEngine
         glm::glm
         Forge::Assets
         spdlog::spdlog
+        lua_static
+        sol2::sol2
 )

@@ -6,8 +6,10 @@
 #include "AudioSystem.h"
 #include "Camera.h"
 #include "Components.h"
+#include "Config.h"
 #include "EntityManager.h"
 #include "Input.h"
+#include "LuaSystem.h"
 #include "Renderer.h"
 #include "SceneManager.h"
 #include "Window.h"
@@ -44,6 +46,8 @@ class Engine {
     Input& getInput() { return *input; }
     Camera& getCamera() { return camera; }
     AudioSystem& getAudio() { return audioSystem; }
+    Config& getConfig() { return config; }
+    LuaSystem& getLua() { return luaSystem; }
     int getWidth() { return width; }
     int getHeight() { return height; }
 
@@ -55,7 +59,9 @@ class Engine {
     AssetManager assetManager;
     SceneManager sceneManager;
     AudioSystem audioSystem;
+    LuaSystem luaSystem;
     Camera camera{1280, 720};
+    Config config;
     int width = 1280;
     int height = 720;
 };

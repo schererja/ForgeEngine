@@ -97,6 +97,9 @@ void AudioSystem::setMasterVolume(float volume) {
 }
 
 void AudioSystem::shutdown() {
+    if (!initialized) {
+        return;
+    }
     if (musicSound) {
         ma_sound_uninit(musicSound);
         delete musicSound;

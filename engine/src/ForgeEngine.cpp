@@ -8,13 +8,18 @@
 #include "Sprite.h"
 namespace Forge {
 
-bool Engine::initialize(const EngineConfig& config) {
+bool Engine::initialize(const EngineConfig& engineConfig) {
     // Logging has to be first
     Log::init();
 
-    width = config.windowWidth;
-    height = config.windowHeight;
-    window = new Window(config.windowTitle, width, height);
+    // Load config from file, which may override defaults in EngineConfig struct
+    config.load("../game/config.lua");
+
+    width = config.getInt("window.width", engineConfig.windowWidth);
+    height = config.getInt("window.height", engineConfig.windowHeight);
+    std::string title =
+        config.getString("window.title", engineConfig.windowTitle);
+    window = new Window(title, width, height);
     renderer = new Renderer(width, height);
     input = new Input();
     camera = Camera(width, height);
@@ -25,6 +30,14 @@ bool Engine::initialize(const EngineConfig& config) {
     }
     if (!audioSystem.initialize()) {
         FORGE_ERROR("Failed to initialize audio system.");
+        return false;
+    }
+
+    float masterVolume = config.getFloat("audio.masterVolume", 1.0f);
+    audioSystem.setMasterVolume(masterVolume);
+
+    if (!luaSystem.initialize(*this)) {
+        FORGE_ERROR("Failed to initialize Lua scripting system.");
         return false;
     }
     FORGE_INFO("Engine initialized successfully.");
