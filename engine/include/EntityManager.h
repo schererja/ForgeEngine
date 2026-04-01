@@ -39,8 +39,15 @@ class EntityManager {
     void removeComponent(EntityID id) {
         getStore<T>()->removeComponent(id);
     }
-
-    // Iterate over all entities with a component of type T and apply the given function.
+    template <typename T>
+    bool hasComponent(EntityID id) const {
+        auto it = componentStores.find(std::type_index(typeid(T)));
+        if (it == componentStores.end()) return false;
+        return static_cast<ComponentStore<T>*>(it->second.get())
+                   ->getComponent(id) != nullptr;
+    }
+    // Iterate over all entities with a component of type T and apply the given
+    // function.
     template <typename T>
     void forEach(std::function<void(EntityID, T&)> func) {
         getStore<T>()->forEach(func);
@@ -52,8 +59,10 @@ class EntityManager {
         auto store1 = getStore<T1>();
         auto store2 = getStore<T2>();
 
-        // For simplicity, we iterate over the smaller store to minimize lookups.
-        if (store1->getAllComponents().size() < store2->getAllComponents().size()) {
+        // For simplicity, we iterate over the smaller store to minimize
+        // lookups.
+        if (store1->getAllComponents().size() <
+            store2->getAllComponents().size()) {
             for (auto& pair : store1->getAllComponents()) {
                 EntityID id = pair.first;
                 T1& comp1 = pair.second;
@@ -82,8 +91,10 @@ class EntityManager {
         auto store3 = getStore<T3>();
 
         // Iterate over the smallest store to minimize lookups.
-        if (store1->getAllComponents().size() < store2->getAllComponents().size() &&
-            store1->getAllComponents().size() < store3->getAllComponents().size()) {
+        if (store1->getAllComponents().size() <
+                store2->getAllComponents().size() &&
+            store1->getAllComponents().size() <
+                store3->getAllComponents().size()) {
             for (auto& pair : store1->getAllComponents()) {
                 EntityID id = pair.first;
                 T1& comp1 = pair.second;
@@ -93,7 +104,8 @@ class EntityManager {
                     func(id, comp1, *comp2, *comp3);
                 }
             }
-        } else if (store2->getAllComponents().size() < store3->getAllComponents().size()) {
+        } else if (store2->getAllComponents().size() <
+                   store3->getAllComponents().size()) {
             for (auto& pair : store2->getAllComponents()) {
                 EntityID id = pair.first;
                 T2& comp2 = pair.second;
@@ -120,12 +132,16 @@ class EntityManager {
     size_t getEntityCount() const { return aliveEntities.size(); };
 
    private:
-    EntityID nextEntityID = 1;         // Start from 1 to avoid using NULL_ENTITY as 0
-    std::queue<EntityID> recycledIDs;  // IDs that have been destroyed and can be reused
-    std::unordered_map<EntityID, bool> aliveEntities;  // Track which entities are currently alive
+    EntityID nextEntityID = 1;  // Start from 1 to avoid using NULL_ENTITY as 0
+    std::queue<EntityID>
+        recycledIDs;  // IDs that have been destroyed and can be reused
+    std::unordered_map<EntityID, bool>
+        aliveEntities;  // Track which entities are currently alive
 
-    // Type-erased map of component stores, keyed by type_index of the component type.
-    std::unordered_map<std::type_index, std::unique_ptr<IComponentStore>> componentStores;
+    // Type-erased map of component stores, keyed by type_index of the component
+    // type.
+    std::unordered_map<std::type_index, std::unique_ptr<IComponentStore>>
+        componentStores;
 
     template <typename T>
     ComponentStore<T>* getStore() {

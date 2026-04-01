@@ -42,14 +42,20 @@ FetchContent_Declare(lua
     GIT_REPOSITORY https://github.com/walterschell/Lua.git
     GIT_TAG        v5.4.7
 )
+set(LUA_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(lua)
-
 # sol2
 FetchContent_Declare(sol2
     GIT_REPOSITORY https://github.com/ThePhD/sol2.git
     GIT_TAG        v3.5.0
 )
 FetchContent_MakeAvailable(sol2)
+
+FetchContent_Declare(Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG        v3.5.2
+)
+FetchContent_MakeAvailable(Catch2)
 add_library(glad STATIC thirdparty/glad/src/gl.c)
 target_include_directories(glad PUBLIC thirdparty/glad/include)
 
@@ -67,3 +73,5 @@ add_subdirectory(engine)
 add_subdirectory(plugins)
 add_subdirectory(game)
 add_subdirectory(tools)
+add_subdirectory(tests)
+enable_testing()

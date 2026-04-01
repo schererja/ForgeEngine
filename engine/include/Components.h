@@ -29,7 +29,7 @@ struct HealthComponent {
     bool isAlive() const { return currentHealth > 0.0f; }
 
     float getPercentage() const {
-        return (maxHealth > 0.0f) ? (currentHealth / maxHealth) * 100.0f : 0.0f;
+        return (maxHealth > 0.0f) ? (currentHealth / maxHealth) : 0.0f;
     }
 
     void takeDamage(float amount) {
@@ -53,8 +53,9 @@ struct PlayerComponent {
 };
 
 struct AIComponent {
-    bool active = true;         // Whether the AI is active or not
-    float aggroRange = 150.0f;  // Distance at which the AI will start chasing the player
+    bool active = true;  // Whether the AI is active or not
+    float aggroRange =
+        150.0f;  // Distance at which the AI will start chasing the player
 };
 
 // Name tag for debugging purposes and potential UI display
